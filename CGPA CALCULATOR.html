@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KARE CGPA Calculator</title>
+   
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            max-width: 600px;
+        }
+        input, button, select {
+            margin: 5px 10px 5px 0;
+            padding: 6px 10px;
+            font-size: 16px;
+        }
+        label {
+            display: inline-block;
+            width: 180px;
+        }
+        /* Flex layout for subject rows */
+        .subject-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .subject-row label {
+            min-width: 70px;
+            margin: 0;
+        }
+        .subject-row select,
+        .subject-row input[type="number"] {
+            width: 80px;
+            padding: 6px 8px;
+            font-size: 16px;
+        }
+        #add-subject {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            font-size: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        #add-subject:hover {
+            background-color: #218838;
+        }
+        #add-subject span.plus {
+            font-weight: bold;
+            font-size: 22px;
+            line-height: 0;
+        }
+        #output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 34px;
+        }
+        .remove-btn:hover {
+            background: #c82333;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>University SGPA & CGPA Calculator (Letter Grades)</h2>
+
+    <h3>Enter Current Semester Data</h3>
+
+    <div id="subjects">
+        <div class="subject-row">
+            <label>Grade:</label>
+            <select class="grade" required>
+                <option value="">Select Grade</option>
+                <option value="10">S</option>
+                <option value="9">A</option>
+                <option value="8">B</option>
+                <option value="7">C</option>
+                <option value="6">D</option>
+                <option value="5">E</option>
+                <option value="0">F</option>
+            </select>
+            <label>Credits:</label>
+            <input type="number" class="credit" min="1" step="1" required>
+        </div>
+    </div>
+
+    <button id="add-subject"><span class="plus">+</span> Add Subject</button>
+
+    <h3>Enter Previous Academic Record</h3>
+    <label>Total Previous Credits:</label>
+    <input type="number" id="prevCredits" min="0" step="1" required><br>
+    <label>Previous CGPA:</label>
+    <input type="number" id="prevCgpa" min="0" max="10" step="0.01" required><br>
+
+    <button onclick="calculateCGPA()" style="font-size:18px; padding:8px 15px; margin-top: 15px;">Calculate</button>
+
+    <div id="output"></div>
+
+    <footer>Made by Katti Mahesh</footer>
+
+    <script>
+        const subjectsDiv = document.getElementById('subjects');
+        const addSubjectBtn = document.getElementById('add-subject');
+
+        let subjectCount = 1;
+
+        addSubjectBtn.addEventListener('click', () => {
+            subjectCount++;
+            const div = document.createElement('div');
+            div.classList.add('subject-row');
+            div.innerHTML = `
+                <label>Grade:</label>
+                <select class="grade" required>
+                    <option value="">Select Grade</option>
+                    <option value="10">S</option>
+                    <option value="9">A</option>
+                    <option value="8">B</option>
+                    <option value="7">C</option>
+                    <option value="6">D</option>
+                    <option value="5">E</option>
+                    <option value="0">F</option>
+                </select>
+                <label>Credits:</label>
+                <input type="number" class="credit" min="1" step="1" required>
+                <button type="button" class="remove-btn" onclick="removeSubject(this)">Remove</button>
+            `;
+            subjectsDiv.appendChild(div);
+        });
+
+        function removeSubject(button) {
+            const subjectRow = button.parentNode;
+            subjectsDiv.removeChild(subjectRow);
+        }
+
+        function calculateCGPA() {
+            const grades = document.querySelectorAll('.grade');
+            const credits = document.querySelectorAll('.credit');
+
+            let totalGradePoints = 0;
+            let totalCredits = 0;
+
+            for(let i = 0; i < grades.length; i++) {
+                let gradeValue = grades[i].value;
+                let credit = parseFloat(credits[i].value);
+
+                if(gradeValue === "" || isNaN(credit)) {
+                    document.getElementById("output").innerText = "Please fill all grade and credit fields correctly.";
+                    return;
+                }
+
+                if(credit <= 0) {
+                    document.getElementById("output").innerText = "Credits should be greater than zero.";
+                    return;
+                }
+
+                let gradePoint = parseFloat(gradeValue);
+                totalGradePoints += gradePoint * credit;
+                totalCredits += credit;
+            }
+
+            if(totalCredits === 0) {
+                document.getElementById("output").innerText = "Total credits cannot be zero.";
+                return;
+            }
+
+            let sgpa = totalGradePoints / totalCredits;
+
+            // Previous data
+            let prevCredits = parseFloat(document.getElementById("prevCredits").value);
+            let prevCgpa = parseFloat(document.getElementById("prevCgpa").value);
+
+            if(isNaN(prevCredits) || isNaN(prevCgpa)) {
+                document.getElementById("output").innerText = "Please fill previous credits and CGPA.";
+                return;
+            }
+            if(prevCredits < 0 || prevCgpa < 0 || prevCgpa > 10) {
+                document.getElementById("output").innerText = "Please enter valid previous credits and CGPA values.";
+                return;
+            }
+
+            let totalOverallCredits = prevCredits + totalCredits;
+            let updatedCgpa = ((prevCgpa * prevCredits) + (sgpa * totalCredits)) / totalOverallCredits;
+
+            document.getElementById("output").innerHTML =
+                `✅ SGPA (Current Semester): <b>${sgpa.toFixed(2)}</b><br>
+                 🎓 Updated CGPA: <b>${updatedCgpa.toFixed(2)}</b>`;
+        }
+    </script>
+
+</body>
+</html>
